@@ -15,6 +15,8 @@
  */
 package org.docksidestage.javatry.basic;
 
+import java.io.File;
+
 import org.docksidestage.bizfw.basic.supercar.SupercarClient;
 import org.docksidestage.javatry.basic.st7.St7ConstructorChallengeException;
 import org.docksidestage.unit.PlainTestCase;
@@ -51,21 +53,21 @@ public class Step07ExceptionTest extends PlainTestCase {
     public void test_exception_hierarchy_Runtime_instanceof_RuntimeException() {
         Object exp = new IllegalStateException("mystic");
         boolean sea = exp instanceof RuntimeException;
-        log(sea); // your answer? => 
+        log(sea); // your answer? => true
     }
 
     /** Same as the previous method question. (前のメソッドの質問と同じ) */
     public void test_exception_hierarchy_Runtime_instanceof_Exception() {
         Object exp = new IllegalStateException("mystic");
         boolean sea = exp instanceof Exception;
-        log(sea); // your answer? => 
+        log(sea); // your answer? => true
     }
 
     /** Same as the previous method question. (前のメソッドの質問と同じ) */
     public void test_exception_hierarchy_Runtime_instanceof_Error() {
         Object exp = new IllegalStateException("mystic");
         boolean sea = exp instanceof Error;
-        log(sea); // your answer? => 
+        log(sea); // your answer? => false
     }
 
     /** Same as the previous method question. (前のメソッドの質問と同じ) */
@@ -79,7 +81,7 @@ public class Step07ExceptionTest extends PlainTestCase {
     public void test_exception_hierarchy_Throwable_instanceof_Exception() {
         Object exp = new Throwable("mystic");
         boolean sea = exp instanceof Exception;
-        log(sea); // your answer? => 
+        log(sea); // your answer? => true
     }
 
     // ===================================================================================
@@ -90,6 +92,13 @@ public class Step07ExceptionTest extends PlainTestCase {
      * (new java.io.File(".") の canonical path を取得してログに表示、I/Oエラーはメッセージとスタックトレースを代わりに)
      */
     public void test_exception_checkedException_basic() {
+        try {
+            File dot = new File(".");
+            String canon = dot.getCanonicalPath();
+            log("Canonical path is " + canon);
+        } catch (Exception e) {
+            log("ERROR! " + e.getMessage());
+        }
     }
 
     // ===================================================================================
@@ -110,9 +119,9 @@ public class Step07ExceptionTest extends PlainTestCase {
             Throwable cause = e.getCause();
             sea = cause.getMessage();
             land = cause.getClass().getSimpleName();
-            log(sea); // your answer? => 
-            log(land); // your answer? => 
-            log(e); // your answer? => 
+            log(sea); // your answer? => Failed to call the third help method: -1
+            log(land); // your answer? => IllegalArgumentException (Integer.valueOf with String parameter)
+            log(e); // your answer? => Stack Trace: java.lang.IllegalStateException: Failed to call the second help method: -1
         }
     }
 
@@ -137,7 +146,7 @@ public class Step07ExceptionTest extends PlainTestCase {
 
     private void throwCauseThirdLevel(int count) {
         if (count < 0) {
-            Integer.valueOf("piari");
+            Integer.valueOf("piari"); //Argument has a string not an int
         }
     }
 
@@ -157,9 +166,13 @@ public class Step07ExceptionTest extends PlainTestCase {
             // _/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/
             // What happens? Write situation and cause here. (何が起きた？状況と原因をここに書いてみましょう)
             // - - - - - - - - - -
-            //
-            //
-            //
+            // Client asks for a steering wheel like the sea, which has a catalog key piari. This is a typo and the cause of the exception!
+            // Piari as a key is 3 (not the goal, 1) with the dictionary in SupercarEasyCatalog, which is a problem. Why?
+            // Once we reach the SteeringWheelManufacturer, we give them the wrong key (we give 3, but we should ask for 1 via client's request)
+            // The incorrect steering wheel ID is used as a key to get the right clincherSpec, as 3 returns "\\(^_^)/" (1 is correct, which returns "(Correct spec text)")
+            // This causes the throw to happen in SpecialScrewManufacturer.java (specifically: makeSpecialScrew())
+
+            //SOLUTION: Simply change the request string for a 'steering wheel like sea' from 'piari' to 'sea' in SupercarDealer.java, around Line 29
             // _/_/_/_/_/_/_/_/_/_/
         }
     }
@@ -170,11 +183,13 @@ public class Step07ExceptionTest extends PlainTestCase {
      * できるだけ例外情報だけでその状況が理解できるように、Supercarのクラスたちの例外ハンドリングを改善しましょう。
      */
     public void test_exception_translation_improveChallenge() {
+        //Improvements made:
+        // SpecialScrewManufacturer Line 27
         try {
             new SupercarClient().buySupercar(); // you can fix the classes
             fail("always exception but none");
         } catch (RuntimeException e) {
-            log("*No hint here for training.", e);
+            log("We had a problem developing the Supercar!", e);
         }
     }
 
@@ -189,7 +204,8 @@ public class Step07ExceptionTest extends PlainTestCase {
         try {
             helpSurprisedYabaiCatch();
         } catch (St7ConstructorChallengeException e) {
-            log("Thrown by help method", e); // should show also "Caused-by" information
+            log(e.getMessage());
+            log("Stack Trace", e); // should show also "Caused-by" information
         }
     }
 
@@ -197,11 +213,11 @@ public class Step07ExceptionTest extends PlainTestCase {
         try {
             helpThrowIllegalState();
         } catch (IllegalStateException e) {
-            throw new St7ConstructorChallengeException("Failed to do something.");
+            throw new St7ConstructorChallengeException("Illegal State Error!");
         }
     }
 
     private void helpThrowIllegalState() { // simple implementation here
-        throw new IllegalStateException("something illegal");
+        throw new IllegalStateException("Illegal State");
     }
 }

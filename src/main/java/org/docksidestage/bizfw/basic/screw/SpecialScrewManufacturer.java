@@ -24,7 +24,7 @@ public class SpecialScrewManufacturer {
     public SpecialScrew makeSpecialScrew(ScrewSpec screwSpec) {
         String specText = screwSpec.getSpecText();
         if (specText.equals("\\(^_^)/")) { // too pinpoint!?
-            String msg = "The kawaii face is not useful to make screw: " + screwSpec;
+            String msg = "Invalid screw spec: " + screwSpec + " | Please check your database for a possibly invalid value or data entry for a possibly invalid key";
             throw new SpecialScrewCannotMakeBySpecException(msg);
         }
         return new SpecialScrew(specText);

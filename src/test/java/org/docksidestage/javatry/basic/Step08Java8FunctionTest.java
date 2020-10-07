@@ -44,7 +44,7 @@ public class Step08Java8FunctionTest extends PlainTestCase {
     //                                              Callback
     //                                              --------
     /**
-     * Are all the strings by log() methods in callback processes same? (yes or no) <br>
+     * Are all the strings by log() methods in callback processes same? (yes) <br>
      * (コールバック処理の中で出力しているログの文字列はすべて同じでしょうか？ (yes or no))
      */
     public void test_java8_lambda_callback_basic() {
@@ -68,7 +68,7 @@ public class Step08Java8FunctionTest extends PlainTestCase {
         log("...Executing lambda expression style callback");
         helpCallbackConsumer(stage -> log(stage + ": " + title));
 
-        // your answer? => 
+        // your answer? => yes
 
         // cannot reassign because it is used at callback process
         //title = "wave";
@@ -84,7 +84,7 @@ public class Step08Java8FunctionTest extends PlainTestCase {
             log(stage);
         });
         log("lost river");
-        // your answer? => 
+        // your answer? => harbor, broadway, dockside, hangar, lost river
     }
 
     private class St8BasicConsumer implements Consumer<String> {
@@ -116,7 +116,7 @@ public class Step08Java8FunctionTest extends PlainTestCase {
         String sea = helpCallbackFunction(number -> {
             return label + ": " + number;
         });
-        log(sea); // your answer? => 
+        log(sea); // your answer? => number: 7
     }
 
     private String helpCallbackFunction(Function<Integer, String> oneArgLambda) {
@@ -141,17 +141,18 @@ public class Step08Java8FunctionTest extends PlainTestCase {
      * </pre>
      */
     public void test_java8_lambda_convertStyle_basic() {
-        helpCallbackSupplier(new Supplier<String>() { // sea
-            public String get() {
-                return "broadway";
-            }
+        //Block
+        helpCallbackSupplier(() -> {
+            return "broadway";
         });
 
-        helpCallbackSupplier(() -> { // land
-            return "dockside";
-        });
+        //Expression
+        helpCallbackSupplier(() -> "dockside");
 
-        helpCallbackSupplier(() -> "hangar"); // piari
+        //Block
+        helpCallbackSupplier(() -> {
+            return "hangar";
+        }); // piari
     }
 
     private void helpCallbackSupplier(Supplier<String> oneArgLambda) {
@@ -163,10 +164,11 @@ public class Step08Java8FunctionTest extends PlainTestCase {
     //                                                                            Optional
     //                                                                            ========
     /**
-     * Are the strings by two log() methods same? (yes or no) <br>
-     * (二つのlog()によって出力される文字列は同じでしょうか？ (yes or no))
+     * Are the strings by two log() methods same? (yes ) <br>
+     * (二つのlog()によって出力される文字列は同じでしょうか？ (yes))
      */
     public void test_java8_optional_concept() {
+        //I personally use this but the Optional seems interesting to use
         St8Member oldmember = new St8DbFacade().oldselectMember(1);
         if (oldmember != null) {
             log(oldmember.getMemberId(), oldmember.getMemberName());
@@ -176,11 +178,11 @@ public class Step08Java8FunctionTest extends PlainTestCase {
             St8Member member = optMember.get();
             log(member.getMemberId(), member.getMemberName());
         }
-        // your answer? => 
+        // your answer? => yes
     }
 
     /**
-     * Are the strings by two log() methods same? (yes or no) <br>
+     * Are the strings by two log() methods same? (yes) <br>
      * (二つのlog()によって出力される文字列は同じでしょうか？ (yes or no))
      */
     public void test_java8_optional_ifPresent() {
@@ -192,7 +194,7 @@ public class Step08Java8FunctionTest extends PlainTestCase {
         optMember.ifPresent(member -> {
             log(member.getMemberId(), member.getMemberName());
         });
-        // your answer? => 
+        // your answer? => yes
     }
 
     /**
@@ -235,12 +237,12 @@ public class Step08Java8FunctionTest extends PlainTestCase {
 
         Integer amba = facade.selectMember(2).flatMap(mb -> mb.getWithdrawal()).map(wdl -> wdl.getWithdrawalId()).orElse(-1);
 
-        log(sea); // your answer? => 
-        log(land); // your answer? => 
-        log(piari); // your answer? => 
-        log(bonvo); // your answer? => 
-        log(dstore); // your answer? => 
-        log(amba); // your answer? => 
+        log(sea); // your answer? => music
+        log(land); // your answer? => music
+        log(piari); // your answer? => music
+        log(bonvo); // your answer? => *no reason
+        log(dstore); // your answer? => *no reason
+        log(amba); // your answer? => 12
     }
 
     /**
@@ -259,7 +261,7 @@ public class Step08Java8FunctionTest extends PlainTestCase {
         } catch (IllegalStateException e) {
             sea = e.getMessage();
         }
-        log(sea); // your answer? => 
+        log(sea); // your answer? => wave
     }
 
     // ===================================================================================
@@ -273,19 +275,19 @@ public class Step08Java8FunctionTest extends PlainTestCase {
         List<St8Member> memberList = new St8DbFacade().selectMemberListAll();
         List<String> oldfilteredNameList = new ArrayList<>();
         for (St8Member member : memberList) {
-            if (member.getWithdrawal().isPresent()) {
+            if (member.getWithdrawal().isPresent()) { //(hangar is null)
                 oldfilteredNameList.add(member.getMemberName());
             }
         }
         String sea = oldfilteredNameList.toString();
-        log(sea); // your answer? => 
+        log(sea); // your answer? => broadway, dockside
 
-        List<String> filteredNameList = memberList.stream() //
-                .filter(mb -> mb.getWithdrawal().isPresent()) //
+        List<String> filteredNameList = memberList.stream() //?
+                .filter(mb -> mb.getWithdrawal().isPresent()) //?
                 .map(mb -> mb.getMemberName()) //
                 .collect(Collectors.toList());
         String land = filteredNameList.toString();
-        log(land); // your answer? => 
+        log(land); // your answer? => broadway, dockside
     }
 
     /**
@@ -295,13 +297,12 @@ public class Step08Java8FunctionTest extends PlainTestCase {
     public void test_java8_stream_map_flatMap() {
         List<St8Member> memberList = new St8DbFacade().selectMemberListAll();
         int sea = memberList.stream()
-                .filter(mb -> mb.getWithdrawal().isPresent())
+                .filter(mb -> mb.getWithdrawal().isPresent()) //1 and 2
                 .flatMap(mb -> mb.getPurchaseList().stream())
-                .filter(pur -> pur.getPurchaseId() > 100)
-                .mapToInt(pur -> pur.getPurchasePrice())
-                .distinct()
+                .mapToInt(pur -> pur.getPurchasePrice()) //only 1 has a list of purchase prices- 100, 200, 200, 300
+                .distinct() // now 100, 200, 300
                 .sum();
-        log(sea); // your answer? => 
+        log(sea); // your answer? => 600 (100+200+300)
     }
 
     // *Stream API will return at Step12 again, it's worth the wait!
