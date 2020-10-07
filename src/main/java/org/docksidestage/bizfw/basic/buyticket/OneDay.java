@@ -6,9 +6,11 @@ package org.docksidestage.bizfw.basic.buyticket;
 
 public class OneDay implements Ticket {
     int displayPrice = 0;
+    int dayCount = 0;
     boolean alreadyIn = false;
-    public OneDay(int displayPrice) {
-        this.displayPrice = displayPrice;
+    public OneDay() {
+        this.displayPrice = TicketBooth.GetPrice(1);
+        this.dayCount = 1;
     }
 
     public void doInPark() {
@@ -21,7 +23,7 @@ public class OneDay implements Ticket {
     public int getDisplayPrice() {
         return displayPrice;
     }
-
+    public int getDayCount() { return dayCount; }
     public boolean isAlreadyIn() {
         return alreadyIn;
     }

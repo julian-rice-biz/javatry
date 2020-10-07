@@ -36,4 +36,5 @@ public interface Ticket {
     //                                                                            ========
     public int getDisplayPrice();
     public boolean isAlreadyIn();
+    public int getDayCount();
 }

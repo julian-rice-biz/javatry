@@ -15,22 +15,30 @@
  */
 package org.docksidestage.bizfw.basic.buyticket;
 
-public class TicketBooth {
+import java.util.HashMap;
+import java.util.Enumeration;
 
+public class TicketBooth {
+    //Better refactoring for one day: store this information in a file and get via IO or in a database
+    private static HashMap<Integer, Integer> DayToPrice = new HashMap<Integer, Integer>() {{
+        put(1, 7400); put(2, 13200); put(4, 22400);
+    }};
+    private static HashMap<Integer, Integer> DayToQuantity = new HashMap<Integer, Integer>() {{
+        put(1, 10); put(2, 10); put(4, 5);
+    }};
     // ===================================================================================
     //                                                                          Definition
     //                                                                          ==========
     private static final int MAX_QUANTITY = 10;
     private static final int ONE_DAY_PRICE = 7400; // when 2019/06/15
     private static final int TWO_DAY_PRICE = 13200;
-
     // ===================================================================================
     //                                                                           Attribute
     //                                                                           =========
     private int quantity = MAX_QUANTITY;
     private int twoDayQuantity = MAX_QUANTITY;
+    private boolean debug = true;
     private Integer salesProceeds;
-
     // ===================================================================================
     //                                                                         Constructor
     //                                                                         ===========
@@ -40,6 +48,14 @@ public class TicketBooth {
     // ===================================================================================
     //                                                                          Buy Ticket
     //                                                                          ==========
+    public static int GetPrice(int day) {
+        if (DayToPrice.containsKey(day)) {
+            return DayToPrice.get(day);
+        }
+        System.out.println("Error! Did not find " + day + " in our price dictionary! Defaulting to One Day");
+        return 1;
+    }
+
     public Ticket buyOneDayPassport(int handedMoney) {
         if (quantity <= 0) {
             throw new TicketSoldOutException("Sold out");
@@ -53,7 +69,7 @@ public class TicketBooth {
         } else {
             salesProceeds = ONE_DAY_PRICE;
         }
-        return new OneDay(ONE_DAY_PRICE);
+        return new OneDay();
     }
 
     public TicketBuyResult buyTwoDayPassport(int handedMoney) {
@@ -71,25 +87,62 @@ public class TicketBooth {
         }
 
         int change = Math.max(handedMoney - TWO_DAY_PRICE, 0);
-        return new TicketBuyResult(change, new TwoDay(TWO_DAY_PRICE));
+        return new TicketBuyResult(change, new PluralDays(2));
+    }
+
+    //Julian's Version -- Buy a passport (1,2,or 4) and get change/ticket in one function
+    public TicketBuyResult buyPassport(int days, int payment) {
+        //Edge Cases
+        if (!DayToPrice.containsKey(days) || !DayToQuantity.containsKey(days)) {
+            throw new TicketNotSold("Ticket not available for sale!");
+        }
+
+        int cost = DayToPrice.get(days);
+        int currentQuantity = DayToQuantity.get(days);
+
+        if (payment < cost) {
+            throw new TicketShortMoneyException("Not enough money to buy a " + days + " day passport!");
+        }
+        if (currentQuantity <= 0) {
+            throw new TicketSoldOutException("We're sold out of " + days + " day passports!");
+        }
+
+        //Passed Cases. Now reduce the quantity by one because we're buying a passport
+        DayToQuantity.put(days, DayToQuantity.get(days)-1);
+
+        if (salesProceeds != null) {
+            salesProceeds += cost;
+        } else {
+            salesProceeds = cost;
+        }
+
+        int change = payment - cost;
+
+        //Friendly comment in the case that there is change
+        if (change != 0 && debug) {
+            System.out.println("Hey! Here's your change: " + change + "円");
+        }
+        return new TicketBuyResult(change, new PluralDays(days));
     }
 
     public static class TicketSoldOutException extends RuntimeException {
-
         private static final long serialVersionUID = 1L;
-
         public TicketSoldOutException(String msg) {
             super(msg);
         }
     }
 
     public static class TicketShortMoneyException extends RuntimeException {
-
         private static final long serialVersionUID = 1L;
-
         public TicketShortMoneyException(String msg) {
             super(msg);
         }
+    }
+
+    //Refactored Version
+    public static class TicketNotSold extends RuntimeException {
+        private static final long serialVersionUID = 1L;
+        public TicketNotSold(String msg) { super(msg); }
     }
 
     // ===================================================================================

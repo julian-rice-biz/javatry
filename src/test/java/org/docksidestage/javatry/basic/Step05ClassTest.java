@@ -15,10 +15,8 @@
  */
 package org.docksidestage.javatry.basic;
 
-import org.docksidestage.bizfw.basic.buyticket.Ticket;
-import org.docksidestage.bizfw.basic.buyticket.TicketBooth;
+import org.docksidestage.bizfw.basic.buyticket.*;
 import org.docksidestage.bizfw.basic.buyticket.TicketBooth.TicketShortMoneyException;
-import org.docksidestage.bizfw.basic.buyticket.TicketBuyResult;
 import org.docksidestage.unit.PlainTestCase;
 
 /**
@@ -164,6 +162,12 @@ public class Step05ClassTest extends PlainTestCase {
      */
     public void test_class_moreFix_type() {
         // your confirmation code here
+        OneDay testOne = new OneDay();
+        log(testOne.getDayCount() + " day passport costs " + testOne.getDisplayPrice());
+        PluralDays testTwo = new PluralDays(2);
+        log(testTwo.getDayCount() + " day passport costs " + testTwo.getDisplayPrice());
+        PluralDays testFour = new PluralDays(4);
+        log(testFour.getDayCount() + " day passport costs " + testFour.getDisplayPrice());
     }
 
     // ===================================================================================
@@ -183,10 +187,16 @@ public class Step05ClassTest extends PlainTestCase {
      * o OneDay用のクラスと複数日用のクラスを作成 (実装クラスと呼ぶ)
      * o 実装クラスが Ticket を implements するように
      * o 複数日用のクラスでは、決められた回数だけ doInPark() できるように
-     * </pre>
+     * </pre>r
      */
     public void test_class_moreFix_useInterface() {
         // your confirmation code here
+        OneDay oneDayTicket = new OneDay();
+        PluralDays twoDayTicket = new PluralDays(2);
+        log(oneDayTicket.getDisplayPrice());
+        oneDayTicket.doInPark();
+        log(twoDayTicket.getDisplayPrice());
+        twoDayTicket.doInPark();
     }
 
     /**
@@ -195,6 +205,9 @@ public class Step05ClassTest extends PlainTestCase {
      */
     public void test_class_moreFix_wonder() {
         // your confirmation code here
+        PluralDays fourDayTicket = new PluralDays(4);
+        log(fourDayTicket.getDisplayPrice());
+        fourDayTicket.doInPark();
     }
 
     /**
@@ -202,6 +215,9 @@ public class Step05ClassTest extends PlainTestCase {
      * (その他、気になるところがあったらリファクタリングしてみましょう (例えば、バランスの良いメソッド名や変数名になっていますか？))
      */
     public void test_class_moreFix_yourRefactoring() {
-        // write confirmation code here
+        //New: I added the method `buyPassport` which accepts # of days and how much the customer is paying
+        TicketBooth booth = new TicketBooth();
+        TicketBuyResult result = booth.buyPassport(4, 30000);
+        log("Change: " + result.getChange() + " | # of Days: " + result.getTicket().getDayCount());
     }
 }
