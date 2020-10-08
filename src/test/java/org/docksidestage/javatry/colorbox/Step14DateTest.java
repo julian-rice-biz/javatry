@@ -15,6 +15,16 @@
  */
 package org.docksidestage.javatry.colorbox;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.time.format.FormatStyle;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Stream;
+
+import org.apache.tomcat.jni.Local;
+import org.docksidestage.bizfw.colorbox.ColorBox;
+import org.docksidestage.bizfw.colorbox.yours.YourPrivateRoom;
 import org.docksidestage.unit.PlainTestCase;
 
 /**
@@ -33,6 +43,13 @@ public class Step14DateTest extends PlainTestCase {
      * (カラーボックスに入っている日付をプラス記号区切り (e.g. 2019+04+24) のフォーマットしたら？)
      */
     public void test_formatDate() {
+        List<ColorBox> colorBoxList = new YourPrivateRoom().getColorBoxList();
+        for (ColorBox box : colorBoxList) {
+            Stream<Object> date = box.getSpaceList().stream()
+                    .filter(x -> x.getContent() instanceof LocalDate)
+                    .map(y -> ((LocalDate)y.getContent()).format(DateTimeFormatter.ofPattern("YYYY+MM+dd")));
+            date.forEach(x -> log(x));
+        }
     }
 
     /**
@@ -40,6 +57,15 @@ public class Step14DateTest extends PlainTestCase {
      * (yellowのカラーボックスに入っているSetの中のスラッシュ区切り (e.g. 2019/04/24) の日付文字列をLocalDateに変換してtoString()したら？)
      */
     public void test_parseDate() {
+        //Doesn't seem to convert to LocalDate for some reason!
+        List<ColorBox> colorBoxList = new YourPrivateRoom().getColorBoxList();
+        Object target = colorBoxList.get(7).getSpaceList().get(0).getContent(); //Target has ID 7
+        if ((Set<String>) target != null) {
+            Set<String> datesToLog = (Set<String>)target;
+            datesToLog.forEach(x -> {
+                log(LocalDate.parse(x, DateTimeFormatter.ofPattern("yyyy/MM/dd")).toString());
+            });
+        }
     }
 
     /**
@@ -47,6 +73,7 @@ public class Step14DateTest extends PlainTestCase {
      * (カラーボックスに入っている日付の月を全て足したら？)
      */
     public void test_sumMonth() {
+
     }
 
     /**
