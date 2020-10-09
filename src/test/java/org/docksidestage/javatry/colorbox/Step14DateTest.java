@@ -15,15 +15,20 @@
  */
 package org.docksidestage.javatry.colorbox;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
-import java.util.List;
-import java.util.Set;
+import java.time.format.TextStyle;
+import java.time.temporal.ChronoUnit;
+import java.util.*;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.apache.tomcat.jni.Local;
 import org.docksidestage.bizfw.colorbox.ColorBox;
+import org.docksidestage.bizfw.colorbox.space.BoxSpace;
 import org.docksidestage.bizfw.colorbox.yours.YourPrivateRoom;
 import org.docksidestage.unit.PlainTestCase;
 
@@ -58,12 +63,17 @@ public class Step14DateTest extends PlainTestCase {
      */
     public void test_parseDate() {
         //Doesn't seem to convert to LocalDate for some reason!
+        //I found out why! 2019/04/24 has a typo -- it's actually 2O (letter O) 19... rip the time I spent looking at this
         List<ColorBox> colorBoxList = new YourPrivateRoom().getColorBoxList();
         Object target = colorBoxList.get(7).getSpaceList().get(0).getContent(); //Target has ID 7
         if ((Set<String>) target != null) {
-            Set<String> datesToLog = (Set<String>)target;
+            Set<String> datesToLog = ((Set<String>)target);
             datesToLog.forEach(x -> {
-                log(LocalDate.parse(x, DateTimeFormatter.ofPattern("yyyy/MM/dd")).toString());
+                try {
+                    log(LocalDate.parse(x, DateTimeFormatter.ofPattern("yyyy/MM/dd")).toString());
+                } catch (Exception e) {
+                    log("Ran into an error");
+                }
             });
         }
     }
@@ -73,7 +83,17 @@ public class Step14DateTest extends PlainTestCase {
      * (カラーボックスに入っている日付の月を全て足したら？)
      */
     public void test_sumMonth() {
-
+        List<ColorBox> colorBoxList = new YourPrivateRoom().getColorBoxList();
+        ColorBox yellow = colorBoxList.stream().filter((box) -> box.getColor().getColorName() == "yellow").findFirst().get();
+        int sum = 0;
+        for (BoxSpace space : yellow.getSpaceList()) {
+            if (space.getContent() instanceof LocalDate) {
+                sum += ((LocalDate) space.getContent()).getMonthValue();
+            } else if (space.getContent() instanceof LocalDateTime) {
+                sum += ((LocalDateTime)space.getContent()).toLocalDate().getMonthValue();
+            }
+        }
+        log("Month Sum: " + sum); //Verified: 9 + 4 => 13
     }
 
     /**
@@ -81,6 +101,21 @@ public class Step14DateTest extends PlainTestCase {
      * (カラーボックスに入っている二番目に見つかる日付に3日進めると何曜日？)
      */
     public void test_plusDays_weekOfDay() {
+        List<ColorBox> colorBoxList = new YourPrivateRoom().getColorBoxList();
+        ColorBox yellow = colorBoxList.stream().filter((box) -> box.getColor().getColorName() == "yellow").findFirst().get();
+        List<LocalDate> dates = new ArrayList<>();
+        for (BoxSpace space : yellow.getSpaceList()) {
+            if (space.getContent() instanceof LocalDate) {
+                dates.add((LocalDate)space.getContent());
+            } else if (space.getContent() instanceof LocalDateTime) {
+                dates.add(((LocalDateTime)space.getContent()).toLocalDate());
+            }
+        }
+        if (dates.size() >= 2) {
+            LocalDate date = dates.get(1);
+            date.plusDays(3);
+            log(date.getDayOfWeek().getDisplayName(TextStyle.SHORT, Locale.getDefault()));
+        }
     }
 
     // ===================================================================================
@@ -91,6 +126,19 @@ public class Step14DateTest extends PlainTestCase {
      * (yellowのカラーボックスに入っている二つの日付は何日離れている？)
      */
     public void test_diffDay() {
+        List<ColorBox> colorBoxList = new YourPrivateRoom().getColorBoxList();
+        ColorBox yellow = colorBoxList.stream().filter((box) -> box.getColor().getColorName() == "yellow").findFirst().get();
+        LocalDate date1 = null;
+        LocalDateTime date2 = null;
+        for (BoxSpace space : yellow.getSpaceList()) {
+            if (space.getContent() instanceof LocalDate) {
+                date1 = (LocalDate)space.getContent();
+            } else if (space.getContent() instanceof LocalDateTime) {
+                date2 = (LocalDateTime)space.getContent();
+            }
+        }
+        long dayDiff = ChronoUnit.DAYS.between(date2.toLocalDate(), date1);
+        log("Difference in days: " + dayDiff);
     }
 
     /**
@@ -103,6 +151,23 @@ public class Step14DateTest extends PlainTestCase {
      * redのカラーボックスに入っているLong型を日数として足して、カラーボックスに入っているリストの中のBigDecimalの整数値が3の小数点第一位の数を日数として引いた日付は？)
      */
     public void test_birthdate() {
+        List<ColorBox> colorBoxList = new YourPrivateRoom().getColorBoxList();
+        ColorBox red = colorBoxList.stream().filter((box) -> box.getColor().getColorName() == "red").findFirst().get();
+        ColorBox yellow = colorBoxList.stream().filter((box) -> box.getColor().getColorName() == "yellow").findFirst().get();
+        for (ColorBox box : colorBoxList) {
+            for (BoxSpace space : box.getSpaceList()) {
+                if (space.getContent() instanceof LocalDateTime) {
+                    LocalDateTime date = (LocalDateTime)space.getContent();
+                    date = date.plusMonths(date.getSecond());
+                    date = date.plusDays((Long)red.getSpaceList().stream().filter((num) -> num.getContent() instanceof Long).findFirst().get().getContent());
+                    //There are so many improvements to ColorBox that I would make if I could make them... grr...
+                    //log(Long.parseLong(((BigDecimal)((List)yellow.getSpaceList().stream().filter((num) -> num.getContent() instanceof List).findFirst().get().getContent()).get(2)).toString().substring(2, 3)));
+                    date = date.minusDays(Long.parseLong(((BigDecimal)((List)yellow.getSpaceList().stream().filter((num) -> num.getContent() instanceof List).findFirst().get().getContent()).get(2)).toString().substring(2, 3)));
+                    log("Date: " + date);
+                    break;
+                }
+            }
+        }
     }
 
     /**
@@ -110,5 +175,14 @@ public class Step14DateTest extends PlainTestCase {
      * (カラーボックスに入っているLocalTimeの秒は？)
      */
     public void test_beReader() {
+        List<ColorBox> colorBoxList = new YourPrivateRoom().getColorBoxList();
+        for (ColorBox box : colorBoxList) {
+            for (BoxSpace space : box.getSpaceList()) {
+                if (space.getContent() instanceof LocalDateTime) {
+                    LocalDateTime date = (LocalDateTime)space.getContent();
+                    log(date.getSecond());
+                }
+            }
+        }
     }
 }
