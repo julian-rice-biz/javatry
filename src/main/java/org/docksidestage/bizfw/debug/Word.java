@@ -21,7 +21,7 @@ public class Word {
     }
 
     public boolean hasLanguage() {
-        getLanguage().countries = 3;
+        getLanguage().countries = 1;
         if (getLanguage() == null) {
             return false;
         } else {

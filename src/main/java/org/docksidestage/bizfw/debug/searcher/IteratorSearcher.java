@@ -20,8 +20,10 @@ public class IteratorSearcher implements Searcher {
     public Word search(String searchingFor) {
         Iterator<Word> iterator = words.iterator();
         while (iterator.hasNext()) {
-            if (iterator.next().getWord().equals(searchingFor)) {
-                return iterator.next();
+            Word target = iterator.next();
+            if (target.getWord().equals(searchingFor)) {
+                System.out.println("Found! " + searchingFor + " | " + target.getWord());
+                return target;
             }
         }
         throw new IllegalArgumentException("the word you are looking for is not here, word:" + searchingFor);

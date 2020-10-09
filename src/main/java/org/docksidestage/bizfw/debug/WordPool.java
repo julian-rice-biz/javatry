@@ -21,6 +21,7 @@ public class WordPool {
     public Map.Entry<Long, Word> create(Language language, String word) {
         Long id = incrementId();
         wordMap.put(id, new Word(language, word));
+//        System.out.println(id + " | " + wordMap.get(id).getWord());
         return new AbstractMap.SimpleEntry<>(id, find(id));
     }
 
@@ -38,7 +39,7 @@ public class WordPool {
     }
 
     public Word find(Long id) {
-        return wordMap.remove(id);
+        return wordMap.get(id);
     }
 
     public Word update(Long id, Word word) {
@@ -56,13 +57,15 @@ public class WordPool {
     }
 
     public Word update(String language, String word1, String word2) {
-        Long id = findId(word2);
+        Long id = findId(word1);
         wordMap.remove(id);
-        wordMap.put(id, new Word(new Language(language), word1));
+        wordMap.put(id, new Word(new Language(language), word2));
         return wordMap.get(id);
     }
 
     public String replace(Long id, String word1, String word2) {
+        Word replacement = new Word(wordMap.get(id).getLanguage(), wordMap.get(id).getWord().replace(word1, word2));
+        wordMap.replace(id, replacement);
         return wordMap.get(id).getWord().replace(word1, word2);
     }
 
@@ -94,7 +97,7 @@ public class WordPool {
     }
 
     private Language getJapanese(LanguagePool languagePool) {
-        wordMap.put(5L, new Word(languagePool.getLanguage("Japanese"), "君"));
+//        wordMap.put(5L, new Word(languagePool.getLanguage("Japanese"), "君"));
         return languagePool.getLanguage("Japanese");
     }
 

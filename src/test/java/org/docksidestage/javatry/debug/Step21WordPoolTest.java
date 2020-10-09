@@ -64,12 +64,12 @@ public class Step21WordPoolTest extends PlainTestCase {
         WordPool pool = new WordPool();
         List<String> words = Arrays.asList("私", "柿", "荼", "昂");
 
-        for (int i = 0; i < words.size(); i++) {
+        for (int i = 1; i == words.size(); i++) {
             // act
             Long actual = pool.findId(words.get(i));
-
+//            System.out.println(actual + " | " + words.get(i));
             // assert
-            assertEquals(i + 1, actual.intValue());
+            assertEquals(i, actual.intValue());
         }
 
     }
